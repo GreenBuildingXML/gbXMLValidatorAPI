@@ -1,4 +1,5 @@
-package com.bimport.asharea.mySQL.user;
+package com.bimport.asharea.mySQL.user.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -17,8 +18,10 @@ public class UserInfo {
     private String email;
     private String phone;
     private String organization;
+    private Boolean validated;
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id", nullable = false)
+    @JsonIgnore
     private User user;
     public UserInfo() {
     }

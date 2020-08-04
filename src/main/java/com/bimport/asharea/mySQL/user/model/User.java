@@ -1,4 +1,4 @@
-package com.bimport.asharea.mySQL.user;
+package com.bimport.asharea.mySQL.user.model;
 
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
