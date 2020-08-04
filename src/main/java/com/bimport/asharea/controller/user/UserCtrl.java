@@ -3,6 +3,7 @@ package com.bimport.asharea.controller.user;
 import com.bimport.asharea.common.*;
 import com.bimport.asharea.common.Exception.ConflictException;
 import com.bimport.asharea.common.Exception.NotFoundException;
+import com.bimport.asharea.common.courier.ActivateUserNotification;
 import com.bimport.asharea.common.hash.HashMethod;
 import com.bimport.asharea.common.hash.Hasher;
 import com.bimport.asharea.common.redis.RedisAccess;
@@ -14,6 +15,7 @@ import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,8 +34,14 @@ public class UserCtrl {
     @Autowired
     UserDAO userDAO;
 
+    @Autowired
+    ActivateUserNotification activateUserNotification;
 
-    @RequestMapping(path = "/ActivateUser", method = RequestMethod.PUT)
+    @Value("${asharea.server.host}")
+    private String serverHost;
+
+
+    @RequestMapping(path = "/ActivateUser", method = RequestMethod.GET)
     @ResponseBody
     public void ActivateUser(HttpServletResponse resp, @RequestParam String uuid) {
         JsonObject res = new JsonObject();
@@ -121,7 +129,7 @@ public class UserCtrl {
         redisAccess.set(uuid, record.toString());
 
         //todo send activation email to user
-
+        activateUserNotification.sendFileUploadNotification(email, username, serverHost + "ActivateUser?uuid=" + uuid);
 
         return uuid;
     }

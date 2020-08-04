@@ -46,9 +46,11 @@ public class UserDAO {
     }
 
     public User saveUser(User user, UserInfo userInfo) {
-        user.setUserInfo(userInfo);
         userInfo.setUser(user);
-        return userRepo.saveAndFlush(user);
+        user.setUserInfo(userInfo);
+        user = userRepo.save(user);
+        userInfoRepo.save(userInfo);
+        return user;
     }
 
     public UserInfo searchUserByEmail(String email) {
