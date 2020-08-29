@@ -39,16 +39,16 @@ public class SpringRedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(host);
         config.setPort(port);
-//        config.setPassword(pwd);
+        config.setPassword(pwd);
 
         JedisClientConfiguration.JedisClientConfigurationBuilder builder = JedisClientConfiguration.builder();
         builder.connectTimeout(Duration.of(timeoutMilli, ChronoUnit.MILLIS));
         builder.readTimeout(Duration.of(timeoutMilli, ChronoUnit.MILLIS));
         builder.usePooling();
 
-//        if (useSSL) {
-//            builder.useSsl();
-//        }
+        if (useSSL) {
+            builder.useSsl();
+        }
 
         return new JedisConnectionFactory(config, builder.build());
     }

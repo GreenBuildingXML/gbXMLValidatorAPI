@@ -4,6 +4,7 @@ import com.bimport.asharea.common.*;
 import com.bimport.asharea.common.Exception.ConflictException;
 import com.bimport.asharea.common.Exception.NotFoundException;
 import com.bimport.asharea.common.courier.ActivateUserNotification;
+import com.bimport.asharea.common.courier.ForgotPasswordNotification;
 import com.bimport.asharea.common.hash.HashMethod;
 import com.bimport.asharea.common.hash.Hasher;
 import com.bimport.asharea.common.redis.RedisAccess;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
@@ -36,10 +38,18 @@ public class UserCtrl {
 
     @Autowired
     ActivateUserNotification activateUserNotification;
+    @Autowired
+    ForgotPasswordNotification forgotPasswordNotification;
 
     @Value("${asharea.server.host}")
     private String serverHost;
+    @Value("${asharea.web.host}")
+    private String webHost;
 
+    @RequestMapping(path = "/welcome", method = RequestMethod.GET)
+    public String welcome(){
+        return "welcome";
+    }
 
     @RequestMapping(path = "/ActivateUser", method = RequestMethod.GET)
     @ResponseBody
@@ -94,8 +104,8 @@ public class UserCtrl {
 
     @ResponseBody
     @RequestMapping(value = "/Register", method = RequestMethod.POST)
-    public String Register(@RequestParam String username, @RequestParam String password, @RequestBody UserInfo user) {
-        String email = user.getEmail();
+    public String Register(@RequestParam String username, @RequestParam String password, @RequestParam String email) {
+        UserInfo user = new UserInfo();
         logger.info("email: "  + email);
         if (StringUtil.isNullOrEmpty(email)) {
             throw new NotFoundException("Email is missing");
@@ -117,7 +127,7 @@ public class UserCtrl {
         userAccount.setHashUsername(hashUserName);
         userAccount.setPassword(hashPwd);
         userAccount.setIsActive(false);
-
+        user.setEmail(email);
         user.setValidated(false);
 
         userAccount = userDAO.saveUser(userAccount, user);
@@ -129,9 +139,60 @@ public class UserCtrl {
         redisAccess.set(uuid, record.toString());
 
         //todo send activation email to user
-        activateUserNotification.sendFileUploadNotification(email, username, serverHost + "ActivateUser?uuid=" + uuid);
+        activateUserNotification.sendEmail(email, username, serverHost + "ActivateUser?uuid=" + uuid);
 
         return uuid;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/ForgotPassword", method = RequestMethod.POST)
+    public String ForgotPassword(@RequestParam String email) {
+        if (!emailUtil.isEmailValid(email)) {
+            return null;
+        }
+        UserInfo userInfo = userDAO.searchUserByEmail(email);
+        if (userInfo == null) {
+            return null;
+        }
+        //generate uuid
+        String uuid = SecurityUtil.getURLRandomStr(20);
+        //set expired time as 10 minutes
+        redisAccess.set(uuid, email, 10 * 60);
+        logger.info("reset password uuid: " + uuid);
+        String resetURL = webHost + "reset_password?" + uuid;
+        forgotPasswordNotification.sendEmail(email, userInfo.getFullname(), resetURL);
+        logger.info("Reset password email sent: " + email);
+
+        return uuid;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/ResetPassword", method = RequestMethod.POST)
+    public void ResetPassword(@RequestParam String password,
+                              @RequestParam String uuid) {
+        String email = redisAccess.get(uuid);
+        logger.info("reset password for: " + email);
+        if (!StringUtil.isNullOrEmpty(email)) {
+            UserInfo userInfo = userDAO.searchUserByEmail(email);
+            if (userInfo == null) {
+                throw new ConflictException("Invalid request, cannot find user data");
+            }
+            User user = userDAO.getUserById(String.valueOf(userInfo.getId()));
+            if (user == null) {
+                throw new ConflictException("Invalid request, cannot find user data");
+            }
+            String hashPwd = SecurityUtil.genSaltedHash(password, user.getSalt());
+            user.setPassword(hashPwd);
+            userDAO.updateUserAccount(user);
+            redisAccess.del(uuid);
+        } else {
+            throw new ConflictException("URL is expired");
+        }
+    }
+
+    @RequestMapping(path = "/api/AuthenticateUser", method = RequestMethod.GET)
+    public void AuthenticateUser(HttpServletRequest req) {
+        String userId = (String) req.getAttribute("userId");
     }
 
 }

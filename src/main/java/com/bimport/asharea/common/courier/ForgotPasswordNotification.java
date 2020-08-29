@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ActivateUserNotification {
+public class ForgotPasswordNotification {
 
     private String COURIER_NOTIFICATION_ID = "ZYDNSJFWFE4SBZJ6BZE4CXJSQT28";
 

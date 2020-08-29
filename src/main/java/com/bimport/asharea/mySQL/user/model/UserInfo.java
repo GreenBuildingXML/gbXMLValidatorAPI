@@ -23,6 +23,9 @@ public class UserInfo {
     @JoinColumn(name = "id", nullable = false)
     @JsonIgnore
     private User user;
+    public String getFullname(){
+        return firstName + " "  + lastName;
+    }
     public UserInfo() {
     }
 }

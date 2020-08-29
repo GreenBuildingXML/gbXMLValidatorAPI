@@ -46,7 +46,7 @@ public class LoggedInValidator {
         } else {
             JsonObject res = new JsonObject();
             res.addProperty("status", "redirect");
-            res.addProperty("url", "/login.html");
+            res.addProperty("url", "/login");
             servletUtil.returnJsonResult(resp, res);
             return false;
         }

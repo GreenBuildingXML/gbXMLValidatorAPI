@@ -57,8 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.addFilter(authenticationCookieFilterBean())
-                .cors()
-                .and().authorizeRequests().antMatchers("/api/**").authenticated().anyRequest().permitAll()
+                .authorizeRequests().antMatchers("/api/**").authenticated().anyRequest().permitAll()
                 .and().exceptionHandling().authenticationEntryPoint(this.unauthorizedHandler)
                 .and().httpBasic()
                 .and().csrf().disable();
