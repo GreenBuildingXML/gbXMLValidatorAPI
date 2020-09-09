@@ -94,7 +94,19 @@
     <dependency> 
       <groupId>org.springframework.session</groupId>  
       <artifactId>spring-session-data-redis</artifactId> 
-    </dependency>  
+    </dependency>
+    <!--        Swagger dependencies-->
+    <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger2</artifactId>
+      <version>2.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger-ui</artifactId>
+      <version>2.9.2</version>
+    </dependency>
+
     <dependency> 
       <groupId>redis.clients</groupId>  
       <artifactId>jedis</artifactId>  
@@ -105,7 +117,12 @@
       <groupId>org.springframework.security</groupId>  
       <artifactId>spring-security-test</artifactId>  
       <scope>test</scope> 
-    </dependency> 
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>29.0-jre</version>
+    </dependency>
   </dependencies>  
   <build> 
     <plugins> 
@@ -117,34 +134,34 @@
         <groupId>com.microsoft.azure</groupId>  
         <artifactId>azure-webapp-maven-plugin</artifactId>  
         <version>1.9.1</version>  
-        <configuration>
-          <schemaVersion>V2</schemaVersion>
-          <resourceGroup>asharea-api-rg</resourceGroup>
-          <appName>asharea-api</appName>
-          <pricingTier>P1v2</pricingTier>
-          <region>eastus</region>
-          <runtime>
-            <os>linux</os>
-            <javaVersion>jre8</javaVersion>
-            <webContainer>jre8</webContainer>
-          </runtime>
-          <appSettings>
-            <property>
-              <name>JAVA_OPTS</name>
-              <value>-Dserver.port=80</value>
-            </property>
-          </appSettings>
-          <deployment>
-            <resources>
-              <resource>
-                <directory>${project.basedir}/target</directory>
-                <includes>
-                  <include>*.jar</include>
-                </includes>
-              </resource>
-            </resources>
-          </deployment>
-        </configuration>
+        <configuration> 
+          <schemaVersion>V2</schemaVersion>  
+          <resourceGroup>AshareaDev</resourceGroup>  
+          <appName>ashrae-api</appName>  
+          <pricingTier>P1v2</pricingTier>  
+          <region>eastus</region>  
+          <runtime> 
+            <os>linux</os>  
+            <javaVersion>jre8</javaVersion>  
+            <webContainer>jre8</webContainer> 
+          </runtime>  
+          <appSettings> 
+            <property> 
+              <name>JAVA_OPTS</name>  
+              <value>-Dserver.port=80</value> 
+            </property> 
+          </appSettings>  
+          <deployment> 
+            <resources> 
+              <resource> 
+                <directory>${project.basedir}/target</directory>  
+                <includes> 
+                  <include>*.jar</include> 
+                </includes> 
+              </resource> 
+            </resources> 
+          </deployment> 
+        </configuration> 
       </plugin> 
     </plugins> 
   </build> 
