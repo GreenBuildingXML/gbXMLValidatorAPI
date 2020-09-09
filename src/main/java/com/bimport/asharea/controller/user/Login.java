@@ -7,6 +7,7 @@ import com.bimport.asharea.common.WebUtil;
 import com.bimport.asharea.common.hash.HashMethod;
 import com.bimport.asharea.common.hash.Hasher;
 import com.bimport.asharea.common.redis.RedisAccess;
+import com.bimport.asharea.mySQL.user.recaptcha.CaptchaService;
 import com.bimport.asharea.mySQL.user.UserDAO;
 import com.bimport.asharea.mySQL.user.model.User;
 import com.bimport.asharea.security.LoginValidator;
@@ -25,13 +26,18 @@ public class Login {
     RedisAccess redisAccess;
     @Autowired
     ServletUtil servletUtil;
+    @Autowired
+    CaptchaService captchaService;
 
     @RequestMapping(path = "/Login", method = RequestMethod.POST)
     @ResponseBody
-    protected void Login(@RequestParam String username, @RequestParam String password, HttpServletResponse resp) {
+    protected void Login(@RequestParam String username, @RequestParam String password, String token, HttpServletResponse resp) {
         JsonObject res = new JsonObject();
         res.addProperty("status", "success");
-        if (StringUtil.isNullOrEmpty(username) || StringUtil.isNullOrEmpty(password  )) {
+        //todo within mobile app
+        captchaService.validateCaptcha(token);
+
+        if (StringUtil.isNullOrEmpty(username) || StringUtil.isNullOrEmpty(password)) {
             throw new NotAuthException();
         }
         // Case: username login

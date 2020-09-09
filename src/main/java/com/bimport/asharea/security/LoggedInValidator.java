@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Component
 public class LoggedInValidator {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     RedisAccess redisAccess;
@@ -25,6 +25,7 @@ public class LoggedInValidator {
 
     String validate(HttpServletRequest req) {
         String sessionId = WebUtil.readCookie(req, LoginValidator.SESSION_COOKIE_NAME);
+        logger.info("sessionId: " + sessionId);
         if (sessionId == null) {
             sessionId = req.getHeader("Authorization");
 
