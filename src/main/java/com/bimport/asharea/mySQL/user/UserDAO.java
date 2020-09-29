@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserDAO {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     UserRepository userRepo;
 
