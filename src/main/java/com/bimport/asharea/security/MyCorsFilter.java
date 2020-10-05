@@ -14,7 +14,7 @@ import java.util.List;
 
 @Component
 public class MyCorsFilter extends CorsFilter {
-    private final List<String> allowedOrigins = Arrays.asList("https://asharea-viewer.azurewebsites.net","https://localhost:5001");
+    private final List<String> allowedOrigins = Arrays.asList("https://gbxml-viewer.azurewebsites.net","https://localhost:5001");
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -26,7 +26,6 @@ public class MyCorsFilter extends CorsFilter {
 
         response.setHeader("Access-Control-Allow-Origin", allowedOrigins.contains(origin) ? origin : "");
         response.setHeader("Vary", "Origin");
-
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
         response.setHeader("Access-Control-Max-Age", "3600");
