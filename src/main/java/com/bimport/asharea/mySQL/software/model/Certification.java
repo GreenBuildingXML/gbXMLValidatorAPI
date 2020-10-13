@@ -20,6 +20,7 @@ public class Certification {
     private String level1CertificationId;
     private String level2CertificationId;
     @Convert(converter = HashMapConverter.class)
+    @Lob
     private Map<String,String> testResult;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)

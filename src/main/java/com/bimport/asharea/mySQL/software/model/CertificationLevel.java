@@ -1,5 +1,5 @@
 package com.bimport.asharea.mySQL.software.model;
 
 public enum CertificationLevel {
-    Lv1,Lv2
+    LEVEL1, LEVEL2
 }
