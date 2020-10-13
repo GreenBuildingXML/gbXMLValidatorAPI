@@ -30,10 +30,11 @@ public class SoftwareCtrl {
     ServletUtil servletUtil;
     @Autowired
     AzureFileUploader azureFileUploader;
-
+    private static String testDir = "cases";
+    private static String standardDir = "standard-cases";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private int totalTests = 5;
+    private int totalTests = 19;
     private String testsRepo = "gbxml-test-file";
     //todo upload image
     @RequestMapping(value = "/AddSoftware", method = RequestMethod.POST)
@@ -42,6 +43,17 @@ public class SoftwareCtrl {
         software.setUserId(userId);
         return softwareDAO.saveSoftware(software);
     }
+
+    @RequestMapping(value = "/UpdateSoftware", method = RequestMethod.PUT)
+    public Software addSoftware(HttpServletRequest req, Software software, String id) {
+        String userId = (String) req.getAttribute("userId");
+        Software old_software = softwareDAO.getSoftwareById(id);
+        old_software.setName(software.getName());
+        old_software.setVersion(software.getVersion());
+        old_software.setDescription(software.getDescription());
+        return softwareDAO.updateSoftware(old_software);
+    }
+
     @RequestMapping(value = "/GetSoftwares", method = RequestMethod.GET)
     public List<Software> getSoftwares(HttpServletRequest req){
         String userId = (String) req.getAttribute("userId");
@@ -64,8 +76,8 @@ public class SoftwareCtrl {
         Software software = softwareDAO.getSoftwareById(id);
         certification.setIsLevel1Passed(true);
         certification.setLevel1CertificationId(UUID.randomUUID().toString());
-        software.setStatus(StatusEnum.IN_PROCESSING);
-        software.setCertificationLevel(CertificationLevel.Lv1);
+        software.setStatus(StatusEnum.PROCESSING);
+        software.setCertificationLevel(CertificationLevel.LEVEL1);
         return softwareDAO.updateCertification(software, certification);
     }
     // todo only accept gbxml how about .xml file
@@ -78,8 +90,11 @@ public class SoftwareCtrl {
             File file = files.get(0);
             String file_name = file.getName();
             if(file_name.contains(".gbxml")){
-                azureFileUploader.upload(testsRepo, "cases", file, id + "_" + testName + ".gbxml");
+                azureFileUploader.upload(testsRepo, testDir, file, id + "_" + testName + ".gbxml");
                 return "success: " + id + "_" + testName + ".gbxml";
+            }else if(file_name.contains(".xml")){
+                azureFileUploader.upload(testsRepo, testDir, file, id + "_" + testName + ".xml");
+                return "success: " + id + "_" + testName + ".xml";
             }
 
         }
@@ -89,35 +104,38 @@ public class SoftwareCtrl {
     }
 
     @RequestMapping(value = "/getTestgbXMLFile", method = RequestMethod.GET)
-    public String getTestgbxmlFile(@RequestParam String id, @RequestParam String testName){
-        String file_name = id + "_" + testName + ".gbxml";
+    public String getTestgbxmlFile(@RequestParam String id, @RequestParam String testName, @RequestParam String type){
+        type = type == null? "gbxml": type;
+        String file_name = id + "_" + testName + "." + type;
         return LinkBuilder.buildTestgbXMLLink(file_name);
 
     }
 
     @RequestMapping(value = "/ValidateLevel2", method = RequestMethod.PUT)
-    public Certification validateLevel2(@RequestParam String id, String testCaseId, String status) {
+    public Certification validateLevel2(@RequestParam String id, String testCaseId, String status, String type) {
         Certification certification = softwareDAO.getCertificationById(id);
         Software software = softwareDAO.getSoftwareById(id);
         Map<String, String> testResult = certification.getTestResult();
+        logger.info("file_type: " + type );
         if(testResult == null){
             testResult = new HashMap();
         }
         if (status.equals("success")) {
-            testResult.put(testCaseId, "success");
+            testResult.put(testCaseId, "success;" + type);
         } else {
-            testResult.put(testCaseId, "failure");
+            testResult.put(testCaseId, "failure;" + type);
         }
         certification.setTestResult(testResult);
         int passed_tests = 0;
         for(String key: testResult.keySet()){
-            if(testResult.get(key).equals("success")){
+            if(testResult.get(key).split(";")[0].equals("success")){
                 passed_tests += 1;
             }
         }
         certification.setPassedTests(passed_tests);
-        if(passed_tests >= 5){
-            software.setCertificationLevel(CertificationLevel.Lv2);
+        // todo total tests: 19 put it inside the properties
+        if(passed_tests >= totalTests){
+            software.setCertificationLevel(CertificationLevel.LEVEL2);
             software.setStatus(StatusEnum.COMPLETED);
             certification.setLevel2CertificationId(UUID.randomUUID().toString());
             certification.setIsLevel2Passed(true);

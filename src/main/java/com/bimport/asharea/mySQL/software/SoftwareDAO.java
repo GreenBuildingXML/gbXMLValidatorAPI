@@ -27,6 +27,10 @@ public class SoftwareDAO {
     public Software getSoftwareById(String id){
         return softwareRepo.findById(Long.parseLong(id)).get();
     }
+    public Software updateSoftware(Software software){
+        return softwareRepo.saveAndFlush(software);
+
+    }
 
     public Software saveSoftware(Software software){
         Certification certification = new Certification();
