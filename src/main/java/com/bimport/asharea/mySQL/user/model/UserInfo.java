@@ -1,4 +1,7 @@
 package com.bimport.asharea.mySQL.user.model;
+import com.bimport.asharea.common.FileUtil;
+import com.bimport.asharea.common.StringCompression;
+import com.bimport.asharea.common.StringUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
@@ -19,13 +22,30 @@ public class UserInfo {
     private String phone;
     private String organization;
     private Boolean validated;
+    @Lob
+    @JsonIgnore
+    private byte[] picBlob;
+    @Transient
+    private String picUrl;
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id", nullable = false)
     @JsonIgnore
     private User user;
     public String getFullname(){
-        return firstName + " "  + lastName;
+        if(!(StringUtil.isNullOrEmpty(firstName) && StringUtil.isNullOrEmpty(lastName))){
+            return firstName + " " + lastName;
+        }else{
+            return email.split("@")[0];
+        }
+
     }
     public UserInfo() {
+    }
+
+    public String getPicUrl() {
+        if(picBlob != null){
+            return FileUtil.BASE64_PREFIX + StringCompression.decompress(picBlob);
+        }
+        return null;
     }
 }

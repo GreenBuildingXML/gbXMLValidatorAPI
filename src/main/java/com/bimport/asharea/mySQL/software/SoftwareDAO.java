@@ -1,5 +1,6 @@
 package com.bimport.asharea.mySQL.software;
 
+import com.bimport.asharea.common.Base64Compression;
 import com.bimport.asharea.mySQL.software.model.Certification;
 import com.bimport.asharea.mySQL.software.model.CertificationRepo;
 import com.bimport.asharea.mySQL.software.model.Software;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
 
 @Service
@@ -16,6 +18,8 @@ public class SoftwareDAO {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private SoftwareRepo softwareRepo;
+    @Autowired
+    Base64Compression base64Compression;
 
     @Autowired
     private CertificationRepo certificationRepo;
@@ -30,6 +34,12 @@ public class SoftwareDAO {
     public Software updateSoftware(Software software){
         return softwareRepo.saveAndFlush(software);
 
+    }
+    public void updateProjectImage(String id, File image){
+        byte[] compressed = base64Compression.compressFileBase64(image);
+        Software software = getSoftwareById(id);
+        software.setPicBlob(compressed);
+        softwareRepo.saveAndFlush(software);
     }
 
     public Software saveSoftware(Software software){

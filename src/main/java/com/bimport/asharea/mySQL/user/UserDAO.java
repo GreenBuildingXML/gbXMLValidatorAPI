@@ -1,5 +1,6 @@
 package com.bimport.asharea.mySQL.user;
 
+import com.bimport.asharea.common.Base64Compression;
 import com.bimport.asharea.common.hash.HashMethod;
 import com.bimport.asharea.common.hash.Hasher;
 import com.bimport.asharea.mySQL.user.model.User;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 
 
 @Service
@@ -21,6 +23,9 @@ public class UserDAO {
 
     @Autowired
     UserInfoRepository userInfoRepo;
+
+    @Autowired
+    Base64Compression base64Compression;
 
     private User getUserLoginInfoHashedUsername(String hash) {
         return userRepo.findFirstByHashUsernameAndIsActive(hash, true);
@@ -51,6 +56,22 @@ public class UserDAO {
         user = userRepo.save(user);
         userInfoRepo.save(userInfo);
         return user;
+    }
+
+    public void updateUserProfileImage(String userId, File image){
+        byte[] compressed = base64Compression.compressFileBase64(image);
+        UserInfo userInfo = getUserInfoById(userId);
+        userInfo.setPicBlob(compressed);
+        userInfoRepo.saveAndFlush(userInfo);
+    }
+
+    public UserInfo updateUserInfo(String userId, UserInfo userInfo){
+        UserInfo old_userinfo = getUserInfoById(userId);
+        old_userinfo.setFirstName(userInfo.getFirstName());
+        old_userinfo.setLastName(userInfo.getLastName());
+        old_userinfo.setOrganization(userInfo.getOrganization());
+        old_userinfo.setPhone(userInfo.getPhone());
+        return userInfoRepo.saveAndFlush(old_userinfo);
     }
 
     public UserInfo searchUserByEmail(String email) {

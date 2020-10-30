@@ -1,5 +1,8 @@
 package com.bimport.asharea.controller.software;
 
+import com.bimport.asharea.common.Exception.ConflictException;
+import com.bimport.asharea.common.FileUtil;
+import com.bimport.asharea.common.ImageUtil;
 import com.bimport.asharea.common.ServletUtil;
 import com.bimport.asharea.common.auzreFile.AzureFileUploader;
 import com.bimport.asharea.common.auzreFile.LinkBuilder;
@@ -10,8 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +33,10 @@ public class SoftwareCtrl {
     ServletUtil servletUtil;
     @Autowired
     AzureFileUploader azureFileUploader;
+
+    @Autowired
+    FileUtil fileUtil;
+
     private static String testDir = "cases";
     private static String Lv1Dir = "lv1";
     private static String standardDir = "standard-cases";
@@ -130,6 +140,31 @@ public class SoftwareCtrl {
             return file_type;
         }
         return "";
+    }
+
+    @RequestMapping(value = "/GetCroppedImage", method = RequestMethod.POST)
+    public String GetCroppedImage(HttpServletRequest req) throws ServletException, IOException {
+        Part part = req.getPart("image");
+        String filename = part.getSubmittedFileName();
+        File file = fileUtil.convertInputStreamToFile(part.getInputStream(), filename);
+
+        if (!ImageUtil.cropImageToSquare(file, 500)) {
+            throw new ConflictException("Parse user profile image failed");
+        }
+        return FileUtil.BASE64_PREFIX + fileUtil.encodeToBase64Str(file);
+    }
+    @RequestMapping(value = "/UploadProjectImage", method = RequestMethod.POST)
+    public String UploadProjectImage(@RequestParam String id, HttpServletRequest req) throws ServletException, IOException {
+        Part part = req.getPart("image");
+        String filename = part.getSubmittedFileName();
+        File file = fileUtil.convertInputStreamToFile(part.getInputStream(), filename);
+
+        if (!ImageUtil.cropImageToSquare(file, 500)) {
+            throw new ConflictException("Parse user profile image failed");
+        }
+        softwareDAO.updateProjectImage(id, file);
+
+        return FileUtil.BASE64_PREFIX + fileUtil.encodeToBase64Str(file);
     }
 
     @RequestMapping(value = "/getTestgbXMLFile", method = RequestMethod.GET)
