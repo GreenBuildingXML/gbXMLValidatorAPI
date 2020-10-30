@@ -48,6 +48,9 @@ public class SoftwareDAO {
         return certificationRepo.saveAndFlush(certification);
     }
 
+    public Certification updateCertification(Certification certification) {
+        return certificationRepo.saveAndFlush(certification);
+    }
     public Certification getCertificationById(String id){
         return certificationRepo.findById(Long.parseLong(id)).get();
     }

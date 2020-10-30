@@ -4,10 +4,7 @@ import com.bimport.asharea.common.ServletUtil;
 import com.bimport.asharea.common.auzreFile.AzureFileUploader;
 import com.bimport.asharea.common.auzreFile.LinkBuilder;
 import com.bimport.asharea.mySQL.software.SoftwareDAO;
-import com.bimport.asharea.mySQL.software.model.Certification;
-import com.bimport.asharea.mySQL.software.model.CertificationLevel;
-import com.bimport.asharea.mySQL.software.model.Software;
-import com.bimport.asharea.mySQL.software.model.StatusEnum;
+import com.bimport.asharea.mySQL.software.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +28,7 @@ public class SoftwareCtrl {
     @Autowired
     AzureFileUploader azureFileUploader;
     private static String testDir = "cases";
+    private static String Lv1Dir = "lv1";
     private static String standardDir = "standard-cases";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -71,11 +69,18 @@ public class SoftwareCtrl {
     }
 
     @RequestMapping(value = "/PassedLevel1", method = RequestMethod.PUT)
-    public Certification validateLevel1(@RequestParam String id){
+    public Certification validateLevel1(@RequestParam String id, @RequestParam Boolean isPassed){
         Certification certification = softwareDAO.getCertificationById(id);
         Software software = softwareDAO.getSoftwareById(id);
-        certification.setIsLevel1Passed(true);
-        certification.setLevel1CertificationId(UUID.randomUUID().toString());
+        if(isPassed){
+            certification.setIsLevel1Passed(true);
+            certification.setLevel1Status(CertStatusEnum.PASSED);
+            certification.setLevel1CertificationId(UUID.randomUUID().toString());
+        }else{
+            certification.setIsLevel1Passed(false);
+            certification.setLevel1Status(CertStatusEnum.FAILED);
+        }
+
         software.setStatus(StatusEnum.PROCESSING);
         software.setCertificationLevel(CertificationLevel.LEVEL1);
         return softwareDAO.updateCertification(software, certification);
@@ -91,16 +96,40 @@ public class SoftwareCtrl {
             String file_name = file.getName();
             if(file_name.contains(".gbxml")){
                 azureFileUploader.upload(testsRepo, testDir, file, id + "_" + testName + ".gbxml");
-                return "success: " + id + "_" + testName + ".gbxml";
+                return "gbxml";
             }else if(file_name.contains(".xml")){
                 azureFileUploader.upload(testsRepo, testDir, file, id + "_" + testName + ".xml");
-                return "success: " + id + "_" + testName + ".xml";
+                return "xml";
             }
 
         }
 
-        return "failure";
+        return "";
+    }
 
+    @RequestMapping(value = "/uploadLv1gbxmlFile", method = RequestMethod.POST)
+    public String uploadLv1gbxmlFile(String id, HttpServletRequest req) {
+        logger.info("upload Level test gbXML file start ...");
+        List<File> files = servletUtil.readAllMultiPartFiles(req);
+        Certification certification = softwareDAO.getCertificationById(id);
+        if (files != null) {
+            System.out.println(files.size() + " : " + files.get(0).getName());
+            File file = files.get(0);
+            String file_name = file.getName();
+            String file_type = "";
+            if (file_name.contains(".gbxml")) {
+                azureFileUploader.upload(testsRepo, Lv1Dir, file, id + ".gbxml");
+                file_type = "gbxml";
+            } else if (file_name.contains(".xml")) {
+                azureFileUploader.upload(testsRepo, Lv1Dir, file, id + ".xml");
+                file_type = "xml";
+
+            }
+            certification.setLv1Type(file_type);
+            softwareDAO.updateCertification(certification);
+            return file_type;
+        }
+        return "";
     }
 
     @RequestMapping(value = "/getTestgbXMLFile", method = RequestMethod.GET)
@@ -108,6 +137,14 @@ public class SoftwareCtrl {
         type = type == null? "gbxml": type;
         String file_name = id + "_" + testName + "." + type;
         return LinkBuilder.buildTestgbXMLLink(file_name);
+
+    }
+
+    @RequestMapping(value = "/getLv1TestgbXMLFile", method = RequestMethod.GET)
+    public String getLv1TestgbxmlFile(@RequestParam String id, @RequestParam String type) {
+        type = type == null ? "gbxml" : type;
+        String file_name = id + "." + type;
+        return LinkBuilder.buildLv1TestgbXMLLink(file_name);
 
     }
 
@@ -139,6 +176,10 @@ public class SoftwareCtrl {
             software.setStatus(StatusEnum.COMPLETED);
             certification.setLevel2CertificationId(UUID.randomUUID().toString());
             certification.setIsLevel2Passed(true);
+        }else{
+            software.setCertificationLevel(CertificationLevel.LEVEL1);
+            software.setStatus(StatusEnum.PROCESSING);
+            certification.setIsLevel2Passed(false);
         }
 
 

@@ -16,6 +16,8 @@ public class Certification {
 
     private Boolean isLevel1Passed = false;
     private Boolean isLevel2Passed = false;
+    private CertStatusEnum Level1Status = CertStatusEnum.NA;
+    private String Lv1Type;
     private int passedTests = 0;
     private String level1CertificationId;
     private String level2CertificationId;

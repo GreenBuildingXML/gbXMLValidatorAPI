@@ -104,7 +104,7 @@ public class UserCtrl {
 
     @ResponseBody
     @RequestMapping(value = "/Register", method = RequestMethod.POST)
-    public String Register(@RequestParam String username, @RequestParam String password, @RequestParam String email) {
+    public String Register(@RequestParam String password, @RequestParam String email) {
         UserInfo user = new UserInfo();
         logger.info("email: "  + email);
         if (StringUtil.isNullOrEmpty(email)) {
@@ -120,10 +120,10 @@ public class UserCtrl {
         }
         User userAccount = new User();
         String salt = SecurityUtil.genSalt();
-        String hashUserName = Hasher.hash(username.toLowerCase(), HashMethod.MD5);
+        String hashUserName = Hasher.hash(email.toLowerCase(), HashMethod.MD5);
         String hashPwd = SecurityUtil.genSaltedHash(password, salt);
         userAccount.setSalt(salt);
-        userAccount.setUsername(username);
+        userAccount.setUsername(email);
         userAccount.setHashUsername(hashUserName);
         userAccount.setPassword(hashPwd);
         userAccount.setIsActive(false);
@@ -139,7 +139,7 @@ public class UserCtrl {
         redisAccess.set(uuid, record.toString());
 
         //todo send activation email to user
-        activateUserNotification.sendEmail(email, username, serverHost + "ActivateUser?uuid=" + uuid);
+        activateUserNotification.sendEmail(email, email, serverHost + "ActivateUser?uuid=" + uuid);
 
         return uuid;
     }

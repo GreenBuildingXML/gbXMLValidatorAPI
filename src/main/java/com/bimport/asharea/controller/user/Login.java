@@ -29,12 +29,14 @@ public class Login {
     @Autowired
     CaptchaService captchaService;
 
+    // username could be username or email
     @RequestMapping(path = "/Login", method = RequestMethod.POST)
     @ResponseBody
     protected void Login(@RequestParam String username, @RequestParam String password, String token, HttpServletResponse resp) {
         JsonObject res = new JsonObject();
         res.addProperty("status", "success");
         //todo within mobile app
+        // check isActive or not
         captchaService.validateCaptcha(token);
 
         if (StringUtil.isNullOrEmpty(username) || StringUtil.isNullOrEmpty(password)) {
