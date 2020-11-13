@@ -117,6 +117,21 @@ public class SoftwareCtrl {
         return "";
     }
 
+    @RequestMapping(value = "/uploadStandardgbXMLFile", method = RequestMethod.POST)
+    public String uploadStandardgbxmlFile(HttpServletRequest req) {
+        logger.info("upload standard gbXML file start ...");
+        List<File> files = servletUtil.readAllMultiPartFiles(req);
+        for(int i =0; i< files.size(); i++){
+            File file = files.get(i);
+            String file_name = file.getName();
+            logger.info("uploaded standard test file: " + file_name);
+            if (file_name.contains(".gbxml")) {
+                azureFileUploader.upload(testsRepo, standardDir, file, file_name);
+            }
+        }
+        return "success";
+    }
+
     @RequestMapping(value = "/uploadLv1gbxmlFile", method = RequestMethod.POST)
     public String uploadLv1gbxmlFile(String id, HttpServletRequest req) {
         logger.info("upload Level test gbXML file start ...");

@@ -1,6 +1,7 @@
 package com.bimport.asharea.mySQL.user;
 
 import com.bimport.asharea.common.Base64Compression;
+import com.bimport.asharea.common.SecurityUtil;
 import com.bimport.asharea.common.hash.HashMethod;
 import com.bimport.asharea.common.hash.Hasher;
 import com.bimport.asharea.mySQL.user.model.User;
@@ -80,6 +81,16 @@ public class UserDAO {
 
     public UserInfo getUserInfoById(String userId){
         return userInfoRepo.findById(Long.parseLong(userId)).orElse(null);
+    }
+
+    public Boolean validatePassword(User user, String password) {
+        String hashPwd = user.getPassword();
+        String salt = user.getSalt();
+        String saltedPwd = SecurityUtil.genSaltedHash(password, salt);
+        if (saltedPwd.equals(hashPwd)) {
+            return true;
+        }
+        return false;
     }
 
     public UserInfo saveUserInfo(UserInfo userInfo){

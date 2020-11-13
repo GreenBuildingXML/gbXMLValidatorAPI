@@ -190,6 +190,21 @@ public class UserCtrl {
         }
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/api/ResetPassword", method = RequestMethod.POST)
+    public void UpdatePassword(HttpServletRequest req,
+                               @RequestParam String password,
+                               @RequestParam String oldPassword) {
+        String userId = (String) req.getAttribute("userId");
+        User user = userDAO.getUserById(userId);
+        if (!userDAO.validatePassword(user, oldPassword)) {
+            throw new ConflictException("The old password you have entered is incorrect");
+        }
+        String hashPwd = SecurityUtil.genSaltedHash(password, user.getSalt());
+        user.setPassword(hashPwd);
+        userDAO.updateUserAccount(user);
+    }
+
     @RequestMapping(path = "/api/AuthenticateUser", method = RequestMethod.GET)
     public void AuthenticateUser(HttpServletRequest req) {
         String userId = (String) req.getAttribute("userId");
