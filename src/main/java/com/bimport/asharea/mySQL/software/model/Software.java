@@ -41,6 +41,12 @@ public class Software {
     public Software() {
     }
 
+    public Software(String name, String description, String version) {
+        this.name = name;
+        this.description = description;
+        this.version = version;
+    }
+
     public String getPicUrl() {
         if (picBlob != null) {
             return FileUtil.BASE64_PREFIX + StringCompression.decompress(picBlob);

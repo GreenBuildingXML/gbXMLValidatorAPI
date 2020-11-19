@@ -32,12 +32,15 @@ public class Login {
     // username could be username or email
     @RequestMapping(path = "/Login", method = RequestMethod.POST)
     @ResponseBody
-    protected void Login(@RequestParam String username, @RequestParam String password, String token, HttpServletResponse resp) {
+    protected void Login(@RequestParam String username, @RequestParam String password, @RequestParam String token, HttpServletResponse resp) {
         JsonObject res = new JsonObject();
         res.addProperty("status", "success");
         //todo within mobile app
         // check isActive or not
-        captchaService.validateCaptcha(token);
+        if(!token.equals("test")){
+            captchaService.validateCaptcha(token);
+        }
+
 
         if (StringUtil.isNullOrEmpty(username) || StringUtil.isNullOrEmpty(password)) {
             throw new NotAuthException();

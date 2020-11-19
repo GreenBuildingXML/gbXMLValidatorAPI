@@ -66,12 +66,12 @@ public class UserDAO {
         userInfoRepo.saveAndFlush(userInfo);
     }
 
-    public UserInfo updateUserInfo(String userId, UserInfo userInfo){
+    public UserInfo updateUserInfo(String userId, String firstName, String lastName, String org, String phone){
         UserInfo old_userinfo = getUserInfoById(userId);
-        old_userinfo.setFirstName(userInfo.getFirstName());
-        old_userinfo.setLastName(userInfo.getLastName());
-        old_userinfo.setOrganization(userInfo.getOrganization());
-        old_userinfo.setPhone(userInfo.getPhone());
+        old_userinfo.setFirstName(firstName);
+        old_userinfo.setLastName(lastName);
+        old_userinfo.setOrganization(org);
+        old_userinfo.setPhone(phone);
         return userInfoRepo.saveAndFlush(old_userinfo);
     }
 

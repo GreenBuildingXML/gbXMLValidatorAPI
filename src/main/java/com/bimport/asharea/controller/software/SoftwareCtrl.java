@@ -46,19 +46,20 @@ public class SoftwareCtrl {
     private String testsRepo = "gbxml-test-file";
     //todo upload image
     @RequestMapping(value = "/AddSoftware", method = RequestMethod.POST)
-    public Software addSoftware(HttpServletRequest req, Software software){
+    public Software addSoftware(HttpServletRequest req, @RequestParam String name, @RequestParam String description, @RequestParam String version){
         String userId = (String) req.getAttribute("userId");
+        Software software = new Software(name, description, version);
         software.setUserId(userId);
         return softwareDAO.saveSoftware(software);
     }
 
     @RequestMapping(value = "/UpdateSoftware", method = RequestMethod.PUT)
-    public Software addSoftware(HttpServletRequest req, Software software, String id) {
+    public Software addSoftware(HttpServletRequest req, @RequestParam String name, @RequestParam String version,@RequestParam String description, String id) {
         String userId = (String) req.getAttribute("userId");
         Software old_software = softwareDAO.getSoftwareById(id);
-        old_software.setName(software.getName());
-        old_software.setVersion(software.getVersion());
-        old_software.setDescription(software.getDescription());
+        old_software.setName(name);
+        old_software.setVersion(version);
+        old_software.setDescription(description);
         return softwareDAO.updateSoftware(old_software);
     }
 

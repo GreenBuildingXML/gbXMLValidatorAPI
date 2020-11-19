@@ -50,8 +50,8 @@ public class UserInfoCtrl {
 
     @RequestMapping(path = "/UpdateUserInfo", method = RequestMethod.PUT)
     @ResponseBody
-    public UserInfo UpdateUserInfo(HttpServletRequest req, UserInfo userInfo) {
+    public UserInfo UpdateUserInfo(HttpServletRequest req, @RequestParam String firstName, @RequestParam String lastName, @RequestParam String organization, @RequestParam String phone) {
         String userId = (String) req.getAttribute("userId");
-        return userDAO.updateUserInfo(userId, userInfo);
+        return userDAO.updateUserInfo(userId, firstName, lastName, organization, phone);
     }
 }
