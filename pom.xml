@@ -12,7 +12,7 @@
   <groupId>com.bimport</groupId>  
   <artifactId>asharea</artifactId>  
   <version>0.0.1-SNAPSHOT</version>  
-  <name>asharea</name>  
+  <name>ashrae</name>
   <description>Demo project for Spring Boot</description>  
   <properties> 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
@@ -106,12 +106,12 @@
       <groupId>io.springfox</groupId>  
       <artifactId>springfox-swagger2</artifactId>  
       <version>2.9.2</version> 
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.19</version>
-    </dependency>
+    </dependency>  
+    <dependency> 
+      <groupId>org.apache.commons</groupId>  
+      <artifactId>commons-compress</artifactId>  
+      <version>1.19</version> 
+    </dependency>  
     <dependency> 
       <groupId>io.springfox</groupId>  
       <artifactId>springfox-swagger-ui</artifactId>  
@@ -146,7 +146,8 @@
         <version>1.9.1</version>  
         <configuration> 
           <schemaVersion>V2</schemaVersion>  
-          <resourceGroup>ashrae-backend</resourceGroup>  
+          <resourceGroup>ashrae-backend</resourceGroup>
+          <subscriptionId>bc85fdd8-7055-491d-bf14-6fa3d1da19b3</subscriptionId>
           <appName>gbXML-api</appName>  
           <pricingTier>B2</pricingTier>  
           <region>eastus</region>  
