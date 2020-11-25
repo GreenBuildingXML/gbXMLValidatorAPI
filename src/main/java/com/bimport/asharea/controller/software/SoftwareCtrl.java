@@ -42,7 +42,7 @@ public class SoftwareCtrl {
     private static String standardDir = "standard-cases";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private int totalTests = 19;
+    private int totalTests = 18;
     private String testsRepo = "gbxml-test-file";
     //todo upload image
     @RequestMapping(value = "/AddSoftware", method = RequestMethod.POST)
@@ -117,7 +117,7 @@ public class SoftwareCtrl {
 
         return "";
     }
-
+    /*update standard gbxml file*/
     @RequestMapping(value = "/uploadStandardgbXMLFile", method = RequestMethod.POST)
     public String uploadStandardgbxmlFile(HttpServletRequest req) {
         logger.info("upload standard gbXML file start ...");
@@ -216,12 +216,18 @@ public class SoftwareCtrl {
         certification.setTestResult(testResult);
         int passed_tests = 0;
         for(String key: testResult.keySet()){
+            /*
+            *  test 19 is optional
+            * */
+            if(key.equals("test19")){
+                continue;
+            }
             if(testResult.get(key).split(";")[0].equals("success")){
                 passed_tests += 1;
             }
         }
         certification.setPassedTests(passed_tests);
-        // todo total tests: 19 put it inside the properties
+        // todo total tests: 18 put it inside the properties
         if(passed_tests >= totalTests){
             software.setCertificationLevel(CertificationLevel.LEVEL2);
             software.setStatus(StatusEnum.COMPLETED);
