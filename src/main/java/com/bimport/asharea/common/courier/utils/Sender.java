@@ -3,6 +3,13 @@ package com.bimport.asharea.common.courier.utils;
 import com.bimport.asharea.common.StringUtil;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -18,16 +25,18 @@ import java.util.UUID;
 public class Sender {
 
     private String url = "https://api.trycourier.app/send";
-    private String SLACK_API = "https://slack.com/api/";
     private String COURIER_AUTH_TOKEN = "69XDZRQXG6M7G8HN4Y7CB1AMC44S";
-    private String ACCESS_TOKEN = "xoxb-565836975671-1214125912964-k2evODTCYxHpomONXUQDuPDI";
-//    private String CHANNEL = "C0163109WMB";
+
     private static final String SENDER_NAME = "Sender_Name";
     private static final String SENDER_ADDRESS = "Sender_Address";
     private static final String SENDER_CITY = "Sender_City";
     private static final String SENDER_STATE = "Sender_State";
     private static final String SENDER_ZIP = "Sender_Zip";
-    private static final String SLACK_USER = "Slack_User";
+
+    private static final String EMAIL_FROM = "";
+
+    @Value("${email.sender-password}")
+    private String sendGridAPIKey;
 
     @Value("${email.sender-name}")
     private String senderName;
@@ -45,7 +54,40 @@ public class Sender {
     private String senderZip;
 
     private static final Logger logger = LoggerFactory.getLogger(Sender.class);
+    // send email via sendGrid
+    public boolean sendGridEmail(Personalization pl, String template_ID, String emailTo) {
+        SendGrid sg = new SendGrid(sendGridAPIKey);
+        Request request = new Request();
 
+        pl.addDynamicTemplateData(SENDER_NAME, senderName);
+        pl.addDynamicTemplateData(SENDER_ADDRESS, senderAddress);
+        pl.addDynamicTemplateData(SENDER_CITY, senderCity);
+        pl.addDynamicTemplateData(SENDER_STATE, senderState);
+        pl.addDynamicTemplateData(SENDER_ZIP, senderZip);
+        pl.addTo(new Email(emailTo));
+
+        Mail mail = new Mail();
+        mail.setFrom(new Email(EMAIL_FROM));
+        mail.setTemplateId(template_ID);
+        mail.addPersonalization(pl);
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            if (response.getStatusCode() != 202) {
+                System.out.println(response.getStatusCode());
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return true;
+    }
+    // send email via courier
     public boolean sendEmail(JsonObject dataObj, String emailTo, String templateId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -53,12 +95,7 @@ public class Sender {
         headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         headers.add(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.name());
 
-//        JsonObject slack = new JsonObject();
-//        slack.addProperty("access_token", ACCESS_TOKEN);
-//        slack.addProperty("channel", CHANNEL);
-
         JsonObject profile = new JsonObject();
-//        profile.add("slack", slack);
         profile.addProperty("email", emailTo);
 
         dataObj.addProperty(SENDER_NAME, senderName);
@@ -66,9 +103,6 @@ public class Sender {
         dataObj.addProperty(SENDER_CITY, senderCity);
         dataObj.addProperty(SENDER_STATE, senderState);
         dataObj.addProperty(SENDER_ZIP, senderZip);
-
-//        String memberId = fetchSlackMemberId(emailTo);
-//        dataObj.addProperty(SLACK_USER, memberId);
 
         String uuid = UUID.randomUUID().toString();
         JsonObject body = new JsonObject();
@@ -92,33 +126,6 @@ public class Sender {
         }
 
         return true;
-
-    }
-
-    public String fetchSlackMemberId(String email){
-        if(StringUtil.isNullOrEmpty(email)){
-            return "";
-        }
-        String url = SLACK_API + "users.lookupByEmail?token="+ACCESS_TOKEN + "&email="+email;
-        String memberId;
-        try{
-            RestTemplate restTemplate = new RestTemplate();
-
-            URI uri = new URI(url);
-
-            ResponseEntity<String> result = restTemplate.getForEntity(uri, String.class);
-            String body = result.getBody();
-            JsonParser parser = new JsonParser();
-            JsonObject res = (JsonObject) parser.parse(body);
-            memberId = res.getAsJsonObject("user").get("id").getAsString();
-            logger.info("memberId", memberId);
-            return memberId;
-
-        }catch (Exception ex){
-            logger.error(ex.toString());
-            return "";
-        }
-
 
     }
 }
