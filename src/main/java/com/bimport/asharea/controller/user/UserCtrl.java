@@ -40,7 +40,6 @@ public class UserCtrl {
     ActivateUserNotification activateUserNotification;
     @Autowired
     ForgotPasswordNotification forgotPasswordNotification;
-
     @Value("${asharea.server.host}")
     private String serverHost;
     @Value("${asharea.web.host}")
@@ -53,18 +52,17 @@ public class UserCtrl {
 
     @RequestMapping(path = "/ActivateUser", method = RequestMethod.GET)
     @ResponseBody
-    public void ActivateUser(HttpServletResponse resp, @RequestParam String uuid) {
+    public String ActivateUser(HttpServletResponse resp, @RequestParam String uuid) {
         JsonObject res = new JsonObject();
         String record = redisAccess.get(uuid);
         if (StringUtil.isNullOrEmpty(record)) {
-            servletUtil.returnErrorResult(resp, res, "Invalid request, cannot find request record");
-            return;
+            return "Error: Invalid request, cannot find request record";
         }
 
         JsonObject jo = JsonUtil.parseToJsonObject(record);
         if (jo == null) {
-            servletUtil.returnErrorResult(resp, res, "Invalid request, data corrupted");
-            return;
+
+            return "Error: Invalid request, data corrupted";
         }
 
         String userId = JsonUtil.readStringValue(jo, "user_id", null);
@@ -73,8 +71,7 @@ public class UserCtrl {
         if (userId != null) {
             userAccount = userDAO.getUserById(userId);
             if (userAccount == null) {
-                servletUtil.returnErrorResult(resp, res, "Invalid request, cannot find user data");
-                return;
+                return "Invalid request, cannot find user data";
             }
         } else {
             userAccount = new User();
@@ -89,8 +86,7 @@ public class UserCtrl {
             userDAO.saveUserInfo(userInfo);
             userId = String.valueOf(userAccount.getId());
         } catch (DataIntegrityViolationException ex) {
-            servletUtil.returnErrorResult(resp, res, "Save user account failed: " + ex.getMessage());
-            return;
+            return "Save user account failed: " + ex.getMessage();
         }
 
         String sessionId = SecurityUtil.genSessionId(userId);
@@ -98,8 +94,7 @@ public class UserCtrl {
         WebUtil.setCookie(resp, LoginValidator.SESSION_COOKIE_NAME, sessionId, -1);
 
         redisAccess.del(uuid);
-        res.addProperty("status", "success");
-        servletUtil.returnJsonResult(resp, res);
+        return "Success! You account has been activated successfully.";
     }
 
     @ResponseBody
@@ -115,27 +110,36 @@ public class UserCtrl {
             throw new ConflictException("Email is not valid");
         }
 
-        if (userDAO.searchUserByEmail(email) != null) {
-            throw new ConflictException("Email is already used, please use another one");
-        }
-        User userAccount = new User();
-        String salt = SecurityUtil.genSalt();
-        String hashUserName = Hasher.hash(email.toLowerCase(), HashMethod.MD5);
-        String hashPwd = SecurityUtil.genSaltedHash(password, salt);
-        userAccount.setSalt(salt);
-        userAccount.setUsername(email);
-        userAccount.setHashUsername(hashUserName);
-        userAccount.setPassword(hashPwd);
-        userAccount.setIsActive(false);
-        user.setEmail(email);
-        user.setValidated(false);
-
-        userAccount = userDAO.saveUser(userAccount, user);
-
+        UserInfo info = userDAO.searchUserByEmail(email);
         //generate uuid and store the inviter id and sender id
         String uuid = SecurityUtil.getURLRandomStr(20);
         JsonObject record = new JsonObject();
-        record.addProperty("user_id", userAccount.getId());
+        if (info != null && info.getValidated() == false) {
+            throw new ConflictException("Email is already used, please use another one");
+        }
+        if(info == null){
+            User userAccount = new User();
+            String salt = SecurityUtil.genSalt();
+            String hashUserName = Hasher.hash(email.toLowerCase(), HashMethod.MD5);
+            String hashPwd = SecurityUtil.genSaltedHash(password, salt);
+            userAccount.setSalt(salt);
+            userAccount.setUsername(email);
+            userAccount.setHashUsername(hashUserName);
+            userAccount.setPassword(hashPwd);
+            userAccount.setIsActive(false);
+            user.setEmail(email);
+            user.setValidated(false);
+
+            userAccount = userDAO.saveUser(userAccount, user);
+            record.addProperty("user_id", userAccount.getId());
+        }else{
+            Long userId = info.getId();
+            User userAccount = userDAO.getUserById(String.valueOf(userId));
+            String hashPwd = SecurityUtil.genSaltedHash(password, userAccount.getSalt());
+            userAccount.setPassword(hashPwd);
+            userDAO.saveUser(userAccount);
+            record.addProperty("user_id", userId);
+        }
         redisAccess.set(uuid, record.toString());
 
         //todo send activation email to user
@@ -191,7 +195,7 @@ public class UserCtrl {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/api/ResetPassword", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/UpdatePassword", method = RequestMethod.POST)
     public void UpdatePassword(HttpServletRequest req,
                                @RequestParam String password,
                                @RequestParam String oldPassword) {

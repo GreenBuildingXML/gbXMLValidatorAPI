@@ -1,7 +1,5 @@
 package com.bimport.asharea.mySQL.user.recaptcha;
 
-import com.bimport.asharea.common.Exception.ConflictException;
-import com.bimport.asharea.common.Exception.RecaptchaValidateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

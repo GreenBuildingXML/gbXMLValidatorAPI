@@ -35,7 +35,7 @@ public class Login {
     protected void Login(@RequestParam String username, @RequestParam String password, @RequestParam String token, HttpServletResponse resp) {
         JsonObject res = new JsonObject();
         res.addProperty("status", "success");
-        //todo within mobile app
+        //todo
         // check isActive or not
         if(!token.equals("test")){
             captchaService.validateCaptcha(token);
@@ -50,7 +50,7 @@ public class Login {
         if (user == null) {
             // Case: username should not be case sensitive
             user = userDAO.getUserByUsername(username);
-            if (user != null) {
+            if (user != null && user.getIsActive()) {
                 user.setHashUsername(Hasher.hash(username.toLowerCase(), HashMethod.MD5));
                 userDAO.updateUserAccount(user);
             } else {
