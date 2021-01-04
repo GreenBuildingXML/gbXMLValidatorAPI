@@ -10,7 +10,7 @@
     <!-- lookup parent from repository --> 
   </parent>  
   <groupId>com.bimport</groupId>  
-  <artifactId>asharea</artifactId>  
+  <artifactId>ashrae</artifactId>
   <version>0.0.1-SNAPSHOT</version>  
   <name>ashrae</name>
   <description>Demo project for Spring Boot</description>  
