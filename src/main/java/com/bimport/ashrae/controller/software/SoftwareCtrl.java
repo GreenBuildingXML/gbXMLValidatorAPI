@@ -8,11 +8,11 @@ import com.bimport.ashrae.common.auzreFile.AzureFileUploader;
 import com.bimport.ashrae.common.auzreFile.LinkBuilder;
 import com.bimport.ashrae.mySQL.software.SoftwareDAO;
 import com.bimport.ashrae.mySQL.software.model.*;
-import com.bimport.ashrae.mySQL.software.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +42,7 @@ public class SoftwareCtrl {
     private static String Lv1Dir = "lv1";
     private static String standardDir = "standard-cases";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    private final long FILE_LIMIT = 5 * 1024 * 1024;
     private int totalTests = 18;
     private String testsRepo = "gbxml-test-file";
     //todo upload image
@@ -105,6 +105,9 @@ public class SoftwareCtrl {
         if(files != null){
             System.out.println(files.size() + " : " + files.get(0).getName() );
             File file = files.get(0);
+            if (file.length() > FILE_LIMIT) {
+                throw new MaxUploadSizeExceededException(FILE_LIMIT);
+            }
             String file_name = file.getName();
             if(file_name.contains(".gbxml")){
                 azureFileUploader.upload(testsRepo, testDir, file, id + "_" + testName + ".gbxml");
