@@ -25,7 +25,7 @@ public class SoftwareDAO {
     private CertificationRepo certificationRepo;
 
     public List<Software> getSoftwares(String userId){
-        return softwareRepo.findAllByUserId(userId);
+        return softwareRepo.findAllByUserIdOrderByCreatedDateDesc(userId);
     }
 
     public Software getSoftwareById(String id){

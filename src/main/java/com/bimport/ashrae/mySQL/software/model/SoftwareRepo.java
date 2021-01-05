@@ -7,5 +7,5 @@ import java.util.List;
 
 @Repository
 public interface SoftwareRepo extends JpaRepository<Software, Long> {
-    List<Software> findAllByUserId(String userId);
+    List<Software> findAllByUserIdOrderByCreatedDateDesc(String userId);
 }

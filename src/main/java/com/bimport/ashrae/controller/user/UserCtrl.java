@@ -56,14 +56,16 @@ public class UserCtrl {
     public String ActivateUser(HttpServletResponse resp, @RequestParam String uuid) {
         JsonObject res = new JsonObject();
         String record = redisAccess.get(uuid);
+        if(StringUtil.isNullOrEmpty(uuid)){
+            throw new ConflictException("Error: UUID  is  missing");
+        }
         if (StringUtil.isNullOrEmpty(record)) {
-            return "Error: Invalid request, cannot find request record";
+            throw new ConflictException("Error: URL expired") ;
         }
 
         JsonObject jo = JsonUtil.parseToJsonObject(record);
         if (jo == null) {
-
-            return "Error: Invalid request, data corrupted";
+            throw new ConflictException("Error: Invalid request, data corrupted");
         }
 
         String userId = JsonUtil.readStringValue(jo, "user_id", null);
@@ -72,7 +74,7 @@ public class UserCtrl {
         if (userId != null) {
             userAccount = userDAO.getUserById(userId);
             if (userAccount == null) {
-                return "Invalid request, cannot find user data";
+                throw new ConflictException("Error: Invalid request, cannot find user data");
             }
         } else {
             userAccount = new User();
@@ -87,7 +89,7 @@ public class UserCtrl {
             userDAO.saveUserInfo(userInfo);
             userId = String.valueOf(userAccount.getId());
         } catch (DataIntegrityViolationException ex) {
-            return "Save user account failed: " + ex.getMessage();
+            throw new ConflictException("Save user account failed: " + ex.getMessage());
         }
 
         String sessionId = SecurityUtil.genSessionId(userId);
@@ -115,7 +117,7 @@ public class UserCtrl {
         //generate uuid and store the inviter id and sender id
         String uuid = SecurityUtil.getURLRandomStr(20);
         JsonObject record = new JsonObject();
-        if (info != null && info.getValidated() == false) {
+        if (info != null && info.getValidated() == true) {
             throw new ConflictException("Email is already used, please use another one");
         }
         if(info == null){
@@ -144,7 +146,7 @@ public class UserCtrl {
         redisAccess.set(uuid, record.toString());
 
         //todo send activation email to user
-        activateUserNotification.sendEmail(email, email, serverHost + "ActivateUser?uuid=" + uuid);
+        activateUserNotification.sendEmail(email, email, webHost + "Activate?uuid=" + uuid);
 
         return uuid;
     }
