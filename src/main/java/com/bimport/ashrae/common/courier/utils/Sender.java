@@ -25,43 +25,18 @@ public class Sender {
     private String url = "https://api.trycourier.app/send";
     private String COURIER_AUTH_TOKEN = "69XDZRQXG6M7G8HN4Y7CB1AMC44S";
 
-    private static final String SENDER_NAME = "Sender_Name";
-    private static final String SENDER_ADDRESS = "Sender_Address";
-    private static final String SENDER_CITY = "Sender_City";
-    private static final String SENDER_STATE = "Sender_State";
-    private static final String SENDER_ZIP = "Sender_Zip";
-
-    private static final String EMAIL_FROM = "";
+    @Value("${email.sender-from}")
+    private String EMAIL_FROM;
 
     @Value("${email.sender-password}")
     private String sendGridAPIKey;
 
-    @Value("${email.sender-name}")
-    private String senderName;
-
-    @Value("${email.sender-address}")
-    private String senderAddress;
-
-    @Value("${email.sender-city}")
-    private String senderCity;
-
-    @Value("${email.sender-state}")
-    private String senderState;
-
-    @Value("${email.sender-zip}")
-    private String senderZip;
 
     private static final Logger logger = LoggerFactory.getLogger(Sender.class);
     // send email via sendGrid
     public boolean sendGridEmail(Personalization pl, String template_ID, String emailTo) {
         SendGrid sg = new SendGrid(sendGridAPIKey);
         Request request = new Request();
-
-        pl.addDynamicTemplateData(SENDER_NAME, senderName);
-        pl.addDynamicTemplateData(SENDER_ADDRESS, senderAddress);
-        pl.addDynamicTemplateData(SENDER_CITY, senderCity);
-        pl.addDynamicTemplateData(SENDER_STATE, senderState);
-        pl.addDynamicTemplateData(SENDER_ZIP, senderZip);
         pl.addTo(new Email(emailTo));
 
         Mail mail = new Mail();
@@ -74,13 +49,14 @@ public class Sender {
             request.setBody(mail.build());
 
             Response response = sg.api(request);
-
-            if (response.getStatusCode() != 202) {
-                System.out.println(response.getStatusCode());
+            if (response.getStatusCode() == 202) {
+                logger.info("Send Successful: " + response.getBody());
+            } else {
+                logger.error("Send Failed");
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error(ex.toString());
         }
 
         return true;
@@ -95,12 +71,6 @@ public class Sender {
 
         JsonObject profile = new JsonObject();
         profile.addProperty("email", emailTo);
-
-        dataObj.addProperty(SENDER_NAME, senderName);
-        dataObj.addProperty(SENDER_ADDRESS, senderAddress);
-        dataObj.addProperty(SENDER_CITY, senderCity);
-        dataObj.addProperty(SENDER_STATE, senderState);
-        dataObj.addProperty(SENDER_ZIP, senderZip);
 
         String uuid = UUID.randomUUID().toString();
         JsonObject body = new JsonObject();
