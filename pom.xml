@@ -10,9 +10,10 @@
     <!-- lookup parent from repository --> 
   </parent>  
   <groupId>com.bimport</groupId>  
-  <artifactId>ashrae</artifactId>
+  <artifactId>ashrae</artifactId>  
   <version>0.0.1-SNAPSHOT</version>  
-  <name>ashrae</name>
+  <packaging>jar</packaging>  
+  <name>ashrae</name>  
   <description>Demo project for Spring Boot</description>  
   <properties> 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
@@ -122,12 +123,12 @@
       <artifactId>jedis</artifactId>  
       <version>3.1.0</version>  
       <type>jar</type> 
-    </dependency>
-    <dependency>
-      <groupId>com.sendgrid</groupId>
-      <artifactId>sendgrid-java</artifactId>
-      <version>4.4.1</version>
-    </dependency>
+    </dependency>  
+    <dependency> 
+      <groupId>com.sendgrid</groupId>  
+      <artifactId>sendgrid-java</artifactId>  
+      <version>4.4.1</version> 
+    </dependency>  
     <dependency> 
       <groupId>org.springframework.security</groupId>  
       <artifactId>spring-security-test</artifactId>  
@@ -151,11 +152,11 @@
         <version>1.9.1</version>  
         <configuration> 
           <schemaVersion>V2</schemaVersion>  
-          <resourceGroup>ashrae-backend</resourceGroup>
-          <subscriptionId>bc85fdd8-7055-491d-bf14-6fa3d1da19b3</subscriptionId>
-          <appName>gbXML-api</appName>  
-          <pricingTier>B2</pricingTier>  
-          <region>eastus</region>  
+          <resourceGroup>CarmelSchemaServerLinux</resourceGroup>  
+          <subscriptionId>8e9327bc-6330-465a-a3e4-e072fb761510</subscriptionId>  
+          <appName>gbXMLValidatorAPI</appName>  
+          <pricingTier>p1v2</pricingTier>  
+          <region>centralus</region>  
           <runtime> 
             <os>linux</os>  
             <javaVersion>jre8</javaVersion>  
