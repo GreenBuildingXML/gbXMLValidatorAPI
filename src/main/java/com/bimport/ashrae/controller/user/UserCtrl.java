@@ -158,7 +158,8 @@ public class UserCtrl {
             return null;
         }
         UserInfo userInfo = userDAO.searchUserByEmail(email);
-        if (userInfo == null) {
+        // not registered users or not validated users
+        if (userInfo == null ||(userInfo != null && userInfo.getValidated() == false)){
             return null;
         }
         //generate uuid
@@ -181,7 +182,7 @@ public class UserCtrl {
         logger.info("reset password for: " + email);
         if (!StringUtil.isNullOrEmpty(email)) {
             UserInfo userInfo = userDAO.searchUserByEmail(email);
-            if (userInfo == null) {
+            if (userInfo == null || (userInfo != null && userInfo.getValidated() == false)) {
                 throw new ConflictException("Invalid request, cannot find user data");
             }
             User user = userDAO.getUserById(String.valueOf(userInfo.getId()));
