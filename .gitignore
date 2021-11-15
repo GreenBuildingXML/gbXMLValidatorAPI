@@ -19,6 +19,7 @@ mvnw*
 *.iws
 *.iml
 *.ipr
+application.properties
 
 ### NetBeans ###
 /nbproject/private/
@@ -30,3 +31,4 @@ build/
 test/
 ### VS Code ###
 .vscode/
+/bin/
